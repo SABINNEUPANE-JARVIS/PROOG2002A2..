@@ -1,1 +1,60 @@
-<!DOCTTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charity Events - Home</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/search">Search Events</a>
+    </nav>
+    <div class="container">
+        <img src="header.jpg" width="400" alt="Charity Events Banner">
+        <h1>Welcome to Charity Events</h1>
+        <p><strong>Our mission:</strong> Connecting generous hearts with meaningful cause across Australia. We help charitable organisations raise funds and awareness for the causes that matters the most.</p>
+        <p><strong>Contact:</strong> For more information, please email us at info@charityevents.com or call us at 040 111 222.</p>
+
+        <h2>Upcoming charity Events</h2>
+        <div id="data"></div>
+    </div>
+<script>
+const API_BASE = "http://localhost:3060/api/events";
+fetch(API_BASE)
+.then(response => {
+    if (!response.ok) 
+        throw new Error("Failed to load events");
+    return response.json();
+})
+.then(data => {
+    const dataDiv = document.getElementById("data");
+    dataDiv.innerHTML = "";
+
+    if (data.length > 0) {
+        data.forEach(event => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML =
+                '<img src="' + event.image_url + '" alt="' + event.event_name + '">' +
+                '<div class="card-body">' +
+                    '<span class="badge ' + event.event_state.toLowerCase() + '">' + event.event_state + '</span>' +
+                    '<h3>' + event.event_name + '</h3>' +
+                    '<p>' + event.category_name + '</p>' +
+                    '<p>' + new Date(event.event_date).toLocaleString() + '</p>' +
+                    '<p>' + event.location + '</p>' +
+                    '<p>Tickets: $' + Number(event.ticket_price).toFixed(2) + '</p>' +
+                    '<p><a href="/event?id=' + event.event_id + '">View details</a></p>' +
+                '</div>';
+            dataDiv.appendChild(card);
+        });
+    } else {
+        dataDiv.textContent = "No events available";
+    }
+})
+.catch(error => {
+    console.error("Error fetching data", error);
+    document.getElementById('data').textContent = "Failed to load data";
+});
+</script>
+</body>
+</html>
