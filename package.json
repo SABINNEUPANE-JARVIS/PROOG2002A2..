@@ -1,0 +1,26 @@
+{
+  "name": "sabinn-a2-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "database.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SABINNEUPANE-JARVIS/PROOG2002A2...git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SABINNEUPANE-JARVIS/PROOG2002A2../issues"
+  },
+  "homepage": "https://github.com/SABINNEUPANE-JARVIS/PROOG2002A2..#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "mysql2": "^3.24.4"
+  }
+}
