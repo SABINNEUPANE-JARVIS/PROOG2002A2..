@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Events</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> |
+        <a href="/search">Search Events</a>
+    </nav>
+
+    <div class="container">
+        <h1>Search Events</h1>
+
+        <form id="form1" onsubmit="validateForm(); return(false);">
+            <div>
+                <label>Date:</label>
+                <input type="date" id="txtDate">
+            </div>
+            <div>
+                <label>Location:</label>
+                <input type="text" id="txtLocation" placeholder="e.g. Brisbane">
+            </div>
+            <div>
+                <label>Category:</label>
+                <select id="txtCategory">
+                    <option value="">All categories</option>
+                </select>
+            </div>
+            <div>
+                <input type="submit" value="Search">
+                <input type="button" value="Clear Filters" onclick="clearFilters()">
+            </div>
+        </form>
+
+        <p id="error" class="error"></p>
+        <div id="data"></div>
+    </div>
+
+<script>
+const API_BASE = "http://localhost:3060/api/events";
+
+//populate the category dropdown from the API
+fetch(API_BASE + "/categories")
+.then(response => response.json())
+.then(data => {
+    const sel = document.getElementById('txtCategory');
+    data.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat.category_id;
+        opt.textContent = cat.category_name;
+        sel.appendChild(opt);
+    });
+})
+.catch(error => {
+    console.error("Error loading categories", error);
+});
+
+//validate form and send GET API call with selected filters
+function validateForm() {
+    const date = document.getElementById('txtDate').value.trim();
+    const location = document.getElementById('txtLocation').value.trim();
+    const category = document.getElementById('txtCategory').value;
+    const errorBox = document.getElementById('error');
+
+    errorBox.textContent = "";
+
+    //validation: user must choose at least one filter
+    if (!date && !location && !category) {
+        errorBox.textContent = "Please select at least one filter.";
+        return;
+    }
+
+    //build query string manually (vanilla JS - no URLSearchParams)
+    const parts = [];
+    if (date)     parts.push('date=' + encodeURIComponent(date));
+    if (location) parts.push('location=' + encodeURIComponent(location));
+    if (category) parts.push('category=' + encodeURIComponent(category));
+    const queryString = parts.join('&');
+
+    //send GET API call with parameters
+    fetch(API_BASE + "/search?" + queryString)
+    .then(response => {
+        if (!response.ok) throw new Error("Search failed");
+        return response.json();
+    })
+    .then(data => {
+        const dataDiv = document.getElementById('data');
+        dataDiv.innerHTML = "";
+
+        if (data.length > 0) {
+            data.forEach(event => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML =
+                    '<img src="' + event.image_url + '" alt="' + event.event_name + '">' +
+                    '<div class="card-body">' +
+                        '<span class="badge ' + event.event_state.toLowerCase() + '">' + event.event_state + '</span>' +
+                        '<h3>' + event.event_name + '</h3>' +
+                        '<p>' + event.category_name + '</p>' +
+                        '<p>' + new Date(event.event_date).toLocaleString() + '</p>' +
+                        '<p>' + event.location + '</p>' +
+                        '<p><a href="/event?id=' + event.event_id + '">View details</a></p>' +
+                    '</div>';
+                dataDiv.appendChild(card);
+            });
+        } else {
+            dataDiv.textContent = "No events match your criteria.";
+        }
+    })
+    .catch(error => {
+        console.error("Error fetching data", error);
+        errorBox.textContent = error.message;
+        document.getElementById('data').innerHTML = "";
+    });
+}
+
+//clear all filters (DOM manipulation)
+function clearFilters() {
+    document.getElementById('form1').reset();
+    document.getElementById('data').innerHTML = "";
+    document.getElementById('error').textContent = "";
+}
+</script>
+</body>
+</html>
